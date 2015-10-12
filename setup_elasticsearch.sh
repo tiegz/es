@@ -8,9 +8,9 @@ bin/plugin -i elasticsearch/marvel/latest
 bin/plugin -i mobz/elasticsearch-head
 
 
-echo "Settings for JishoPi:" >> /etc/elasticsearch/elasticsearch.yml
-echo "  index.number_of_shards: 1" >> /etc/elasticsearch/elasticsearch.yml
-echo "  index.number_of_replicas: 0" >> /etc/elasticsearch/elasticsearch.yml
+echo "# Settings for JishoPi (https://github.com/tiegz/jisho_pi):" >> /etc/elasticsearch/elasticsearch.yml
+echo "index.number_of_shards: 1" >> /etc/elasticsearch/elasticsearch.yml
+echo "index.number_of_replicas: 0" >> /etc/elasticsearch/elasticsearch.yml
 # This is only necessary if you're going to host the HTML file somewhere else
 # echo "  http.cors.enabled: true" >> /etc/elasticsearch/elasticsearch.yml
 
