@@ -1,4 +1,4 @@
-### Jisho Pi
+### 辞書Pi /　じしょPi / jishoPi
 
 This is a small library that demonstrates how to:
 
