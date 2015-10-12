@@ -1,7 +1,5 @@
 #!/usr/bin/env sh
 
-# Resources:
-#   * http://www.jedict.com/
 
 # Setup elasticsearch
 wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.2.deb
@@ -21,5 +19,6 @@ update-rc.d elasticsearch defaults
 
 wget -O - http://ftp.monash.edu.au/pub/nihongo/edict2u.gz | gunzip -c > edict2u
 
-echo "Running reindex_edict.rb now:"
-ruby reindex_edict.rb
+echo
+echo
+echo "You're all done! Now run `ruby reindex_edict.rb` to index it."
