@@ -33,6 +33,11 @@ cd jisho_pi
 ./setup_elasticsearch.sh
 ```
 
+#### 5) Get your Raspberry Pi's ip address:
+
+Example: `ifconfig wlan0 | grep inet | cut -d':' -f2 | cut -d 'B' -f1`
+
+#### 6) Test the search page by browsing to http://YOUR_RASPBPI/edict.html
 
 
 ### TODO
