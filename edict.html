@@ -3,7 +3,9 @@
 		<title>JishoPi</title>
 		<script>
 			window.$ = document.querySelectorAll.bind(document);
-			var currentSearches = {};
+
+			var currentSearches = {},
+				host_with_port = "http://" + window.location.hostname + ":9200";
 
 			function pageLoad() {
 				var $search = $('#search')[0];
@@ -84,7 +86,7 @@
 				};
 
 				// Set up and make the request.
-				request.open('POST', 'http://localhost:9200/edict/entry/_search', true);
+				request.open('POST', host_with_port + '/edict/entry/_search', true);
 				request.send(JSON.stringify(query));
 		  	currentSearches[term] = true;
 			}

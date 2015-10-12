@@ -45,7 +45,12 @@ def send_mapping_to_es
 
 	puts "Creating /edict mapping..."
 	cmd = "curl -s -XPUT #{ES_HOST}/edict/_mapping/entry -d '#{mapping.to_json}'"
-	result = JSON.parse `#{cmd}`
+	begin
+		result = JSON.parse `#{cmd}`
+	rescue => e
+		puts cmd
+		raise e
+	end
 
 	throw "Failure! #{cmd}" unless $?.success?
 end
