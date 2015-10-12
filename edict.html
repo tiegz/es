@@ -1,0 +1,141 @@
+<html>
+	<head>
+		<title>JishoPi</title>
+		<script>
+			window.$ = document.querySelectorAll.bind(document);
+			var currentSearches = {};
+
+			function pageLoad() {
+				var $search = $('#search')[0];
+
+				$search.addEventListener('keypress', function() {
+				  var now = +new Date(),
+				  	val = $search.value;
+
+				  if (val.length > 0) {
+				  	lastKeypress = now;
+				  	console.log("Searching for " + val)
+				  	sendQuery(val);
+				  }
+				});
+			}
+
+			function sendQuery(term) {
+				var $results = $('#results')[0],
+					$search = $('#search')[0],
+					$total = $('#total')[0],
+					request = new XMLHttpRequest(),
+					query = { query: { query_string: { query: term } } };
+
+				request.onreadystatechange = function(response) {
+					// If the current search term isn't being searched for yet,
+					// give up here and restart the search. Avoids cases where a
+					// keypress wasn't registered and it was the last intended search.
+					var currentTerm = $search.value;
+					if (term != currentTerm && !currentSearches[currentTerm]) {
+						sendQuery(currentTerm);
+						return;
+					}
+
+				  console.log("response back for ", term)
+				  if (request.readyState === 4) {
+				    if (request.status === 200) {
+				      var hits = JSON.parse(request.responseText).hits;
+
+				      $total.innerHTML = "Showing " + hits.hits.length +
+				      	" results of " + parseInt(hits.total) +
+				      	" for '" + term + "'.";
+
+				      $results.innerHTML = "";
+				      hits.hits.forEach(function(item) {
+				        var tr = document.createElement('tr'),
+				        	kanji = document.createElement('td'),
+				        	kana = document.createElement('td'),
+				        	codes = document.createElement('td'),
+				        	meanings = document.createElement('td');
+
+				        	str = "",
+				        	entry = item._source;
+
+
+				        kanji.innerText = (entry.kanji.split(' ').join(', '));
+				        kanji.style.width = "20%";
+				        kana.innerText = (entry.kana.split(' ').join(', '));
+				        kana.style.width = "20%";
+				        codes.innerText = (entry.codes.join(' '));
+				        codes.style.width = "10%";
+				        meanings.style.color = 'darkred';
+				        meanings.innerText = (entry.meanings);
+				        meanings.style.fontSize = '12px';
+				        meanings.style.display = 'inline-block';
+				        meanings.style.width = '50%';
+				        tr.appendChild(kanji);
+				        tr.appendChild(kana);
+				        tr.appendChild(codes);
+				        tr.appendChild(meanings);
+
+				        $results.appendChild(tr);
+				      });
+				    } else {
+				    	console.log("Bad response: ", request, response);
+				    }
+				  	currentSearches[term] = false;
+				  }
+				};
+
+				// Set up and make the request.
+				request.open('POST', 'http://localhost:9200/edict/entry/_search', true);
+				request.send(JSON.stringify(query));
+		  	currentSearches[term] = true;
+			}
+
+			window.onload = pageLoad;
+		</script>
+		<style>
+			html, body {
+				font-family: "helvetica neue";
+				font-size: 48px;
+			}
+			input#search {
+				-webkit-appearance: none;
+				display: block;
+				height: 80px;
+				width: 100%;
+				font-size: 32px;
+				padding: 10px 20px;
+			}
+			#total {
+				position: absolute;
+				top: 35px;
+				right: 40px;
+				font-style: italic;
+				color: #AAA;
+			}
+			#total, ul, ul li {
+				font-size: 18px;
+			}
+			table {
+				margin: 0;
+				padding: 0;
+				list-style: none;
+				width: 90%;
+			}
+			table tr td {
+				margin: 0;
+				padding: 10;
+				list-style: none;
+				background: #EEE;
+				border-bottom: dashed #DDD;
+			}
+			table tr > td {
+				font-weight: bold;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="total"></div>
+		<input type="text" id="search" autocomplete="off" placeholder="Search the Japanese dictionary..." />
+		<table id="results">
+		</table>
+	</body>
+</html>
