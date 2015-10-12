@@ -4,13 +4,15 @@ require 'json'
 Encoding.default_internal = Encoding::UTF_8
 Encoding.default_external = Encoding::UTF_8
 
+# TODO clean this up / organize
+
 # This script will take the 'editc2u' file, parse each entry, and send them to ES.
 #
 # Resources:
 #   * http://www.jedict.com/
 
 IP_ADDR = `ifconfig wlan0 | grep inet | cut -d':' -f2 | cut -d 'B' -f1`
-ES_HOST="http://localhost:9200"
+ES_HOST = "http://localhost:9200"
 
 # Check if Elasticsearch is running yet
 `curl -s -i localhost:9200 | grep "status" | grep 200 1>/dev/null || echo 1`
