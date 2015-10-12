@@ -6,7 +6,7 @@ wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.2
 dpkg -i elasticsearch-1.7.2.deb
 bin/plugin -i elasticsearch/marvel/latest
 bin/plugin -i mobz/elasticsearch-head
-
+rm elasticsearch-1.7.2.deb
 
 echo "# Settings for JishoPi (https://github.com/tiegz/jisho_pi):" >> /etc/elasticsearch/elasticsearch.yml
 echo "index.number_of_shards: 1" >> /etc/elasticsearch/elasticsearch.yml
