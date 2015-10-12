@@ -65,7 +65,7 @@ end
 
 send_mapping_to_es
 
-lines = File.read('edict2u').lines
+lines = File.read('edict2u').lines.to_a
 
 puts "Sending #{lines.size} entries to /edicts..."
 lines.tap(&:shift).compact.map(&:strip).each.with_index do |line, idx|
