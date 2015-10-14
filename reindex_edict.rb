@@ -17,7 +17,7 @@ ES_HOST = "http://localhost:9200"
 # Check if Elasticsearch is running yet
 `curl -s -i localhost:9200 | grep "status" | grep 200 1>/dev/null || echo 1`
 unless $?.success?
-	raise "Elasticsearch not running! Might still be booting up. Check http://#{IP_ADDR}:9200 and try again."
+  raise "Elasticsearch not running! Might still be booting up. Check http://#{IP_ADDR}:9200 and try again."
 end
 
 # Via http://www.edrdg.org/wwwjdic/wwwjdicinf.html#code_tag + http://nihongo.monash.edu/dictionarycodes.html
@@ -27,44 +27,44 @@ CODE_DICTIONARY = {"abbr"=>"abbreviation", "adj-f"=>"noun or verb acting prenomi
 CODES_REGEXP = CODE_DICTIONARY.keys.map { |c| Regexp.escape(c) }.join("|")
 
 def send_mapping_to_es
-	# Reset index
-	puts "Deleting /edict index..."
-	`curl -s -XDELETE #{ES_HOST}/edict`
-	puts "Creating /edict index..."
-	`curl -s -XPUT #{ES_HOST}/edict`
+  # Reset index
+  puts "Deleting /edict index..."
+  `curl -s -XDELETE #{ES_HOST}/edict`
+  puts "Creating /edict index..."
+  `curl -s -XPUT #{ES_HOST}/edict`
 
   # https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-core-types.html
   mapping = {
-  	entry: {
-  		properties: {
-  			kanji: {type: "string", store: true}, # array of strings
-  			kana: {type: "string", store: true},  # array of strings
-  			codes: {type: "string", store: true},
-  			codes_meanings: {type: "string", store: true}, # array of strings
-  			meanings: {type: "string", store: true},
-  			file_line: {type: "string", store: true},
-  			file_lineno: {type: "integer", store: true}
-  		}
-  	}
-	}
+    entry: {
+      properties: {
+        kanji: {type: "string", store: true}, # array of strings
+        kana: {type: "string", store: true},  # array of strings
+        codes: {type: "string", store: true},
+        codes_meanings: {type: "string", store: true}, # array of strings
+        meanings: {type: "string", store: true},
+        file_line: {type: "string", store: true},
+        file_lineno: {type: "integer", store: true}
+      }
+    }
+  }
 
-	puts "Creating /edict mapping..."
-	cmd = "curl -s -XPUT #{ES_HOST}/edict/_mapping/entry -d '#{mapping.to_json}'"
-	begin
-		result = JSON.parse `#{cmd}`
-	rescue => e
-		puts cmd
-		raise e
-	end
+  puts "Creating /edict mapping..."
+  cmd = "curl -s -XPUT #{ES_HOST}/edict/_mapping/entry -d '#{mapping.to_json}'"
+  begin
+    result = JSON.parse `#{cmd}`
+  rescue => e
+    puts cmd
+    raise e
+  end
 
-	throw "Failure! #{cmd}" unless $?.success?
+  throw "Failure! #{cmd}" unless $?.success?
 end
 
 def send_entry_to_es(entry)
-	cmd = "curl -s -XPUT #{ES_HOST}/edict/entry/#{entry[:file_lineno]} -d '#{entry.to_json.gsub(/'/, "")}'"
-	result = JSON.parse `#{cmd}`
+  cmd = "curl -s -XPUT #{ES_HOST}/edict/entry/#{entry[:file_lineno]} -d '#{entry.to_json.gsub(/'/, "")}'"
+  result = JSON.parse `#{cmd}`
 
-	throw "Failure! #{cmd} -> #{result.inspect}" if !$?.success? || !result['created']
+  throw "Failure! #{cmd} -> #{result.inspect}" if !$?.success? || !result['created']
 end
 
 
@@ -74,42 +74,42 @@ lines = File.read('edict2u').lines.to_a
 
 puts "Sending #{lines.size} entries to /edicts..."
 lines.tap(&:shift).compact.map(&:strip).each.with_index do |line, idx|
-	lineno = idx + 1
+  lineno = idx + 1
 
-	kanji_kana, _ = line.split(' /', 2)
-	kanji, kana = kanji_kana.split(' ', 2)
-	kanji = kanji.split(';')
-	kana = kana.to_s.strip.delete('[').delete(']').split(';')
+  kanji_kana, _ = line.split(' /', 2)
+  kanji, kana = kanji_kana.split(' ', 2)
+  kanji = kanji.split(';')
+  kana = kana.to_s.strip.delete('[').delete(']').split(';')
 
-	# Theory: If there's no kana, it probably means the kana *is* the kanji.
-	kana, kanji = kanji, [] if kana.size.zero?
+  # Theory: If there's no kana, it probably means the kana *is* the kanji.
+  kana, kanji = kanji, [] if kana.size.zero?
 
-	# Not going to strip tags out of definitions.
-	codes = []
-	_.gsub!(/\((#{CODES_REGEXP})\)/) do |m|
-		codes << m
-		''
-	end
+  # Not going to strip tags out of definitions.
+  codes = []
+  _.gsub!(/\((#{CODES_REGEXP})\)/) do |m|
+    codes << m
+    ''
+  end
 
-	meanings = _.strip
+  meanings = _.strip
 
-	# NB storing some of these as joined strings instead of arrays so we
-	# can use a regular tokenizer instead of the fancy ones
-	entry = {
-		kanji: kanji.join(" "),
-		kana: kana.join(" "),
-		codes: codes,
-		codes_meanings: CODE_DICTIONARY.values_at(*codes),
-		meanings: meanings,
-		file_line: line,
-		file_lineno: lineno
-	}
+  # NB storing some of these as joined strings instead of arrays so we
+  # can use a regular tokenizer instead of the fancy ones
+  entry = {
+    kanji: kanji.join(" "),
+    kana: kana.join(" "),
+    codes: codes,
+    codes_meanings: CODE_DICTIONARY.values_at(*codes),
+    meanings: meanings,
+    file_line: line,
+    file_lineno: lineno
+  }
 
-	send_entry_to_es(entry)
+  send_entry_to_es(entry)
 
-	if lineno % 100 == 0
-		puts "#{lineno} records indexed (#{(lineno / lines.size) * 100}%)"
-	end
+  if lineno % 100 == 0
+    puts "#{lineno} records indexed (#{(lineno / lines.size) * 100}%)"
+  end
 end
 
 
